@@ -1,0 +1,133 @@
+# NodeMCU Röle Kontrol Sistemi
+
+Bu proje, NodeMCU'nun hem **Access Point (AP)** hem de **Station (STA)** modunda çalışmasını sağlayarak, kablosuz ağ üzerinden röleleri kontrol etmeyi amaçlamaktadır. Kullanıcı, bir buton yardımıyla cihazı sıfırlayarak tekrar AP moduna alabilir ve WiFi ayarlarını değiştirebilir.
+
+## 🚀 Özellikler
+- **AP Modu:** İlk başlatmada NodeMCU, kendi WiFi ağına sahip olur ve kullanıcıdan SSID ile parola bilgilerini alır.
+- **EEPROM Kullanımı:** WiFi SSID ve parola bilgileri EEPROM'a kaydedilir, böylece cihaz yeniden başlatıldığında aynı ağa bağlanabilir.
+- **STA Modu:** WiFi bilgileri alındıktan sonra, cihaz kaydedilen SSID ve parola ile internete bağlanır.
+- **Röle Kontrolü:** Kullanıcı, hem **buton ile** hem de **HTTP istekleri** ile röleleri açıp kapatabilir.
+- **Buton ile Resetleme:** `D1` pinine bağlı butona basılarak, NodeMCU tekrar AP moduna alınabilir.
+- **Web Arayüzü:** Kullanıcı, tarayıcı üzerinden röleleri kontrol edebilir.
+- **Firebase ile verilerin uzaktan kontrol edilebilir.
+
+---
+
+## 🛠️ Gereksinimler
+
+- **NodeMCU ESP8266**
+- **Röle Modülü**
+- **HRC-S04  Modülü**
+- **Buton (D1 pinine bağlı)**
+- **Potansiyometre**
+
+---
+
+## 🔧 Bağlantılar
+
+| ESP8266 (NodeMCU) | Bağlantı |
+|-------------------|----------|
+|      **  D1 **    | Reset Butonu |
+|      **  D2 **    | Röle 1  |
+|      **  D3 **    | Röle 2  |
+|      **  D4 **    | Röle 3  |
+|      **  D5 **    | trigPin |
+|      **  D6 **    | trigPin |
+|      **  A0 **    |   Pot   |
+---
+
+## 📌 Kurulum ve Kullanım
+
+### 1️⃣ **Arduino IDE'yi Hazırlama**
+1. ** Driver ** desteğini yükleyin
+2. ** .ini ayarlamarı yapın
+3. ** Project_info_panel.h içindeayarlamarı yapın
+---
+
+### 2️⃣ **Kodu Yükleme ve Çalıştırma**
+1. **Kodunuzu ESP8266'ya yükleyin.**
+2. **İlk başlatmada cihaz AP modunda açılır.**
+   - Cihazın WiFi ağına bağlanın (`NodeMCU_AP` gibi bir isim görünecektir.)
+   - Tarayıcınızdan `http://192.168.4.1` adresine gidin.
+   - Buradan WiFi SSID ve parola bilgilerini girerek cihazı WiFi ağına bağlayın.
+3. **Cihaz STA moduna geçerek kaydedilen WiFi ağına bağlanır.**
+   - Seri monitörden IP adresini kontrol edebilirsiniz.
+4. **Web arayüzünü kullanarak röleleri kontrol edin.**
+   - `http://ESP_IP_ADRESI/relay?relay=1&state=1` (Röle 1 Aç)
+   - `http://ESP_IP_ADRESI/relay?relay=1&state=0` (Röle 1 Kapat)
+5. ** Firebase üzerinden verialışverişi **
+   - Firestore üzerinden kontrol bu kontrol yapısı web arayüü ile senkronizedir.
+6. **Buton ile cihazı sıfırlayıp tekrar AP moduna alabilirsiniz.**
+
+---
+
+## 🌐 Web Arayüzü Kullanımı
+NodeMCU, bir **HTML tabanlı web arayüzü** sunarak rölelerin kolayca kontrol edilmesini sağlar. Tarayıcınızdan ESP8266'nın IP adresine giderek arayüze erişebilirsiniz.
+
+### 🔗 **Örnek HTTP Komutları**
+
+| İşlem | URL |
+|-------|-----|
+| Röle 1 Aç | `http://ESP_IP_ADRESI/relay?relay=1&state=1` |
+| Röle 1 Kapat | `http://ESP_IP_ADRESI/relay?relay=1&state=0` |
+| Röle 2 Aç | `http://ESP_IP_ADRESI/relay?relay=2&state=1` |
+| Röle 2 Kapat | `http://ESP_IP_ADRESI/relay?relay=2&state=0` |
+| Röle 3 Aç | `http://ESP_IP_ADRESI/relay?relay=3&state=1` |
+| Röle 3 Kapat | `http://ESP_IP_ADRESI/relay?relay=3&state=0` |
+
+
+---
+
+## 🛠️ Kod Yapısı
+
+📂 **Proje Dosyaları:**
+```
+/NodeMCU_Relay_Control
+├── main.cpp          # Ana program
+├──WifiManager
+|     ├── WifiManager.cpp    # Wifi kontrol yönetimi
+|     ├── WifiManager.h     
+├──FirestoreManager
+|     ├── FirestoreManager.cpp    # Firebase kontrol yönetimi
+|     ├── FirestoreManager.h    
+|     ├──JsonParser
+|           ├── JsonParser.cpp    # JsonParser yönetimi
+|           ├── JsonParser.h  
+├──WebManager
+|     ├── WebManager.cpp    # Web arayüzü yönetimi
+|     ├── WebManager.h      
+├── RelayManager
+|     ├── RelayManager.cpp  # Röle kontrol yönetimi
+|     ├── RelayManager.h    
+├──PotentiometerManager
+|     ├── Potentiometer.cpp    # pot kontrol yönetimi
+|     ├── Potentiometer.h   
+├──HC-SR04
+|     ├── HC-SR04.cpp    # HC-SR04 kontrol yönetimi
+|     ├── HC-SR04.h  
+├── data/index.html   # HTML arayüzü (SPIFFS için)
+└── README.md         # Proje açıklaması
+```
+
+---
+
+## ❓ Sorun Giderme
+
+1️⃣ **Cihaz AP modunda gözükmüyor:**
+   - Cihazı resetleyin (`D1` butonuna basın).
+   - Kodun tekrar yüklendiğinden emin olun.
+
+2️⃣ **Cihaz WiFi ağına bağlanmıyor:**
+   - SSID ve parola bilgilerinin doğru olduğundan emin olun.
+   - Router'da MAC filtresi olup olmadığını kontrol edin.
+
+3️⃣ **HTTP komutları çalışmıyor:**
+   - IP adresinin doğru olduğunu doğrulayın.
+   - `http://ESP_IP_ADRESI/relay?relay=1&state=1` gibi tam URL kullanın.
+
+
+---
+
+📌 **Lisans**
+Bu proje MIT lisansı ile lisanslanmıştır. Kullanım serbesttir! 🎯
+
